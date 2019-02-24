@@ -1,21 +1,28 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import AppFrame from '../components/AppFrame';
 import CustomersActions from '../components/CustomersActions';
 import CustomerList from '../components/CustomerList';
-
-const customers = [
-    { 'dni': '27000000', 'name': 'Juan Perez', 'age': 37 },
-    { 'dni': '30000000', 'name': 'Otro', 'age': 35 },
-    { 'dni': '37000000', 'name': 'Luis Martinez', 'age': 32 },
-];
+import { fetchCostumers } from '../actions/fetchCostumers';
+import { getCustomers } from '../selectors/customers';
 
 class CustomersContainer extends Component {
+
+    componentDidMount() {
+        this.props.fetchCostumers();
+    }
+    
+
+    handleAddNew = () => {
+        this.props.history.push('/customers/new');
+    }
 
     renderBody = customers => (
         <div>
             <CustomerList
-                customers={customers} urlPath={'customers/'}>
+                customers={customers} urlPath={'/customers'}>
             </CustomerList>
             <CustomersActions>
                 <button onClick={this.handleAddNew}>Nuevo Cliente</button>
@@ -27,7 +34,7 @@ class CustomersContainer extends Component {
         return (
             <div>
                 <AppFrame header={'Listado de Clientes'}
-                    body={this.renderBody(customers)}>
+                    body={this.renderBody(this.props.customers)}>
                 </AppFrame>
             </div>
         );
@@ -35,7 +42,18 @@ class CustomersContainer extends Component {
 }
 
 CustomersContainer.propTypes = {
-
+    fetchCostumers: PropTypes.func.isRequired,
+    customers: PropTypes.array.isRequired,
 };
 
-export default CustomersContainer;
+CustomersContainer.defaultProps = {
+    customers: []
+}
+
+const mapStateToProps = state => ({
+    customers: getCustomers(state)
+});
+
+export default withRouter(
+    connect( mapStateToProps, { fetchCostumers } )(CustomersContainer) 
+);
